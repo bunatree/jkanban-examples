@@ -1,2 +1,2 @@
 # jkanban-examples
-Contains some examples to learn how to use jKanban.
+Contains some examples to learn how to use <a href="https://github.com/riktar/jkanban">jKanban</a>.
