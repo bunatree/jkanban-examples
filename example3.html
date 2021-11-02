@@ -28,6 +28,23 @@
       max-height: 240px;
       overflow: hidden;
     }
+    /* メッセージ表示欄 */
+    #show-message {
+      margin: 0 1% 1rem 1%;
+      padding: 0.5rem;
+      color: white;
+      background-color: mediumturquoise;
+    }
+    /* 完了したカードのテキストを灰色にして取り消し線を入れる */
+    .kanban-item.done {
+      color: gray;
+      text-decoration: line-through;
+      background-color: whitesmoke;
+    }
+    /* 完了したカードの画像を75%モノクロにする */
+    .kanban-item.done img {
+      filter: grayscale(75%);
+    }
     /* カラムのタイトルの色 */
     .kanban-board header {
       color: white;
@@ -45,6 +62,7 @@
   </style>
 </head>
 <body>
+  <div id="show-message">&nbsp;</div>
   <div id="kanban-canvas">
     <!-- ここにカンバンが表示される -->
   </div>  
@@ -53,46 +71,48 @@
     // カンバンに表示されるカラムやカードを定義
     const dataContent = [
       {
-        "id"    : "column-id-1",
-        "title" : "赤",
-        "class": "red",
-        "item"  : [
+        "id": "column-id-1",
+        "title": "準備中",
+        "class": "red,waiting",
+        "item": [
           {
-            "id"      : "item-id-1",
-            "title"   : "<span class='text-red text-bold'>カード 1</span>",
-            "username": "hoge"
+            "id": "item-id-1",
+            "title": "カード 1",
+            "class": "todo"
           },
           {
-            "id"      : "item-id-2",
-            "title"   : "カード 2",
-            "class": "orange",
-            "username": "piyo"
+            "id": "item-id-2",
+            "title": "カード 2",
+            "class": "todo,orange",
           }
         ]
       },
       {
         "id": "column-id-2",
-        "title": "青",
-        "class": "blue",
+        "title": "実行中",
+        "class": "blue,in-progress",
         "item": [
           {
             "id": "item-id-3",
-            "title": "<div class='item-title'>カード 3</div><div class='item-body'><img src='https://i.imgur.com/b1dGytP.jpeg' /></div>"
+            "title": "<div class='item-title'>カード 3</div><div class='item-body'><img src='https://i.imgur.com/b1dGytP.jpeg' /></div>",
+            "class": "todo"
           }
         ]
       },
       {
         "id": "column-id-3",
-        "title": "緑",
-        "class": "green",
+        "title": "完了",
+        "class": "green,completed",
         "item": [
           {
             "id": "item-id-4",
-            "title": "カード 4"
+            "title": "カード 4",
+            "class": "done"
           },
           {
             "id": "item-id-5",
-            "title": "カード 5"
+            "title": "カード 5",
+            "class": "done"
           }
         ]
       }
@@ -138,35 +158,70 @@
     });
 
     function onKanbanItemClicked(el) {
-      alert(el.innerText + ' がクリックされました。');
+      showMessage(el.innerText + ' が左クリックされました。');
     }
 
     function onKanbanItemMoved(el, target, source, sibling) {
-      // 警告メッセージ
-      var alertMsg = '';
       // 移動元カラムのタイトル
-      var sourceTitle = source.parentNode.querySelector('header').innerText;
+      const sourceTitle = source.parentNode.querySelector('header').innerText;
       // 移動元カラムのID
-      var sourceId = source.parentNode.dataset.id;
+      const sourceId = source.parentNode.dataset.id;
       // 移動先カラムのタイトル
-      var targetTitle = target.parentNode.querySelector('header').innerText;
+      const targetTitle = target.parentNode.querySelector('header').innerText;
       // 移動元カラムのID
-      var targetId = target.parentNode.dataset.id;
-      // 同じカラム内の移動か、それとも異なるカラム間の移動なのかを判別
-      if (sourceId === targetId) {
-        alertMsg = el.innerText + ' が ' + sourceTitle + ' のカラム内で移動しました。';
-      } else {
-        alertMsg = el.innerText + ' が ' + sourceTitle + ' から ' + targetTitle + ' へ移動しました。';
-      }
+      const targetId = target.parentNode.dataset.id;
+
+      // 同じカラム内の移動か、それとも異なるカラム間の移動かを判別
+      const sameColumn = (sourceId === targetId) ? true : false;
+
+      // カラム内 or カラム間の移動によってメッセージを変える
+      const alertMsg = (sameColumn) ? 
+        el.innerText + ' が ' + sourceTitle + ' のカラム内で移動しました。':
+        el.innerText + ' が ' + sourceTitle + ' から ' + targetTitle + ' へ移動しました。';
+
       // メッセージを表示
-      alert(alertMsg);
+      showMessage(alertMsg);
+      
+      // 異なるカラム間の移動なおかつ移動先カラムが「完了」の場合
+      // カードのステータスを「done」にする。
+      // 異なるカラム間の移動なおかつ移動先カラムが「完了」以外の場合
+      // カードのステータスを「todo」にする。
+      if (!sameColumn && targetTitle === '完了') {
+        setKanbanItemStatus(el, 'done');
+      } else if (!sameColumn && targetTitle !== '完了') {
+        setKanbanItemStatus(el, 'todo');
+      }
+
+    }
+
+    function setKanbanItemStatus(el, status) {
+      // ステータスが「done」の場合は
+      // カードの「todo」クラスを「done」に変更する。
+      if (status === 'done') {
+        el.classList.remove('todo');
+        el.classList.add('done');
+      // ステータスが「done」以外の場合は
+      // カードの「done」クラスを「todo」に変更する。
+      } else {
+        el.classList.remove('done');
+        el.classList.add('todo');
+      }
+    }
+
+    function showMessage(msg) {
+      document.getElementById('show-message').innerHTML = msg;
     }
 
     // カードに data-class= 属性が設定されていたら、
     // その値を取得してクラス名に追加する。
+    // 今回はカンマ区切りで複数が設定されているので、
+    // まずは配列に変換してから処理する。
     document.querySelectorAll('.kanban-item').forEach(item => {
       if (item.dataset.class) {
-        item.classList.add(item.dataset.class);
+        const arrayClass = item.dataset.class.split(',');
+        arrayClass.forEach(className => {
+          item.classList.add(className);
+        });
       }
     });
 
