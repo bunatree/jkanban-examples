@@ -62,10 +62,13 @@
   </style>
 </head>
 <body>
+
+  <!-- ここにメッセージが表示される -->
   <div id="show-message">&nbsp;</div>
-  <div id="kanban-canvas">
-    <!-- ここにカンバンが表示される -->
-  </div>  
+
+  <!-- ここにカンバンが表示される -->
+  <div id="kanban-canvas"></div>
+
   <script>
 
     // カンバンに表示されるカラムやカードを定義
@@ -144,7 +147,7 @@
       },
       dropEl: function (el, target, source, sibling) {
         // カードがドロップされたときに実行
-        onKanbanItemMoved(el, target, source, sibling);
+        onKanbanItemDropped(el, target, source, sibling);
       },
       dragBoard: function (el, source) {
         // カラムのドラッグを開始した時に実行
@@ -161,7 +164,7 @@
       showMessage(el.innerText + ' が左クリックされました。');
     }
 
-    function onKanbanItemMoved(el, target, source, sibling) {
+    function onKanbanItemDropped(el, target, source, sibling) {
       // 移動元カラムのタイトル
       const sourceTitle = source.parentNode.querySelector('header').innerText;
       // 移動元カラムのID
@@ -226,6 +229,7 @@
     });
 
   </script>
+
 </body>
 </html>
 
