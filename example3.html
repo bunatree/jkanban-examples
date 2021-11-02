@@ -106,8 +106,61 @@
       widthBoard: '250px',        // カラムの幅 (responsivePercentageの「true」設定により無視される)
       responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
       dragItems: true,            // trueを選択時はカードをドラッグ可能
-      dragBoards: true            // カラムをドラッグ可能にするかどうか
+      dragBoards: true,           // カラムをドラッグ可能にするかどうか
+
+      // コールバック
+      click: function (el) {
+        // カードが左クリックされた時に実行
+        onKanbanItemClicked(el);
+      },
+      context: function (el, event) {
+        // カードが右クリックされた時に実行
+      },
+      dragEl: function (el, source) {
+        // カードのドラッグが始まった時に実行
+      },
+      dragendEl: function (el) {
+        // カードがドラッグが終わった時に実行
+      },
+      dropEl: function (el, target, source, sibling) {
+        // カードがドロップされたときに実行
+        onKanbanItemMoved(el, target, source, sibling);
+      },
+      dragBoard: function (el, source) {
+        // カラムのドラッグを開始した時に実行
+      },
+      dragendBoard: function (el) {
+        // カラムのドラッグが終わった時に実行
+      },
+      buttonClick: function(el, boardId) {
+        // ボタンがクリックされた時に実行
+      }
     });
+
+    function onKanbanItemClicked(el) {
+      alert(el.innerText + ' がクリックされました。');
+    }
+
+    function onKanbanItemMoved(el, target, source, sibling) {
+      // 警告メッセージ
+      var alertMsg = '';
+      // 移動元カラムのタイトル
+      var sourceTitle = source.parentNode.querySelector('header').innerText;
+      // 移動元カラムのID
+      var sourceId = source.parentNode.dataset.id;
+      // 移動先カラムのタイトル
+      var targetTitle = target.parentNode.querySelector('header').innerText;
+      // 移動元カラムのID
+      var targetId = target.parentNode.dataset.id;
+      // 同じカラム内の移動か、それとも異なるカラム間の移動なのかを判別
+      if (sourceId === targetId) {
+        alertMsg = el.innerText + ' が ' + sourceTitle + ' のカラム内で移動しました。';
+      } else {
+        alertMsg = el.innerText + ' が ' + sourceTitle + ' から ' + targetTitle + ' へ移動しました。';
+      }
+      // メッセージを表示
+      alert(alertMsg);
+    }
 
     // カードに data-class= 属性が設定されていたら、
     // その値を取得してクラス名に追加する。
