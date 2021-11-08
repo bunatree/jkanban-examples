@@ -41,9 +41,10 @@
       text-decoration: line-through;
       background-color: whitesmoke;
     }
-    /* 完了したカードの画像を75%モノクロにする */
+    /* 完了したカードの画像を75%モノクロにして薄く表示する */
     .kanban-item.done img {
       filter: grayscale(75%);
+      opacity: 0.5;
     }
     /* カラムのタイトルの色 */
     .kanban-board header {
@@ -80,12 +81,12 @@
         "item": [
           {
             "id": "item-id-1",
-            "title": "カード 1",
+            "title": "AAA",
             "class": "todo"
           },
           {
             "id": "item-id-2",
-            "title": "カード 2",
+            "title": "BBB",
             "class": "todo,orange",
           }
         ]
@@ -97,7 +98,7 @@
         "item": [
           {
             "id": "item-id-3",
-            "title": "<div class='item-title'>カード 3</div><div class='item-body'><img src='https://i.imgur.com/b1dGytP.jpeg' /></div>",
+            "title": "<div class='item-title'>CCC</div><div class='item-body'><img src='https://i.imgur.com/b1dGytP.jpeg' /></div>",
             "class": "todo"
           }
         ]
@@ -109,12 +110,12 @@
         "item": [
           {
             "id": "item-id-4",
-            "title": "カード 4",
+            "title": "DDD",
             "class": "done"
           },
           {
             "id": "item-id-5",
-            "title": "カード 5",
+            "title": "EEE",
             "class": "done"
           }
         ]
@@ -161,7 +162,7 @@
     });
 
     function onKanbanItemClicked(el) {
-      showMessage(el.innerText + ' が左クリックされました。');
+      showMessage('カード「' + el.innerText + '」が左クリックされました。');
     }
 
     function onKanbanItemDropped(el, target, source, sibling) {
@@ -171,7 +172,7 @@
       const sourceId = source.parentNode.dataset.id;
       // 移動先カラムのタイトル
       const targetTitle = target.parentNode.querySelector('header').innerText;
-      // 移動元カラムのID
+      // 移動先カラムのID
       const targetId = target.parentNode.dataset.id;
 
       // 同じカラム内の移動か、それとも異なるカラム間の移動かを判別
@@ -179,8 +180,8 @@
 
       // カラム内 or カラム間の移動によってメッセージを変える
       const alertMsg = (sameColumn) ? 
-        el.innerText + ' が ' + sourceTitle + ' のカラム内で移動しました。':
-        el.innerText + ' が ' + sourceTitle + ' から ' + targetTitle + ' へ移動しました。';
+        'カード「' + el.innerText + '」が、カラム『' + sourceTitle + '』内で移動しました。':
+        'カード「' + el.innerText + '」が、カラム『' + sourceTitle + '』からカラム『' + targetTitle + '』へ移動しました。';
 
       // メッセージを表示
       showMessage(alertMsg);
