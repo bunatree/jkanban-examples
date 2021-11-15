@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jKanban サンプル (2)</title>
+  <!-- jKanban の .css ファイルを読み込む -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jkanban@1.3.1/dist/jkanban.min.css">
+  <!-- jKanban の .js ファイルを読み込む -->
+  <script src="https://cdn.jsdelivr.net/npm/jkanban@1.3.1/dist/jkanban.min.js"></script>
+  <style>
+    /* カードの設定 */
+    .kanban-item .text-red {
+      color: crimson;
+    }
+    .kanban-item .text-bold {
+      font-weight: bold;
+    }
+    .kanban-item.orange {
+      color: white;
+      background-color: darkorange;
+    }
+    .kanban-item .item-body img {
+      width: 100%;
+    }
+    .kanban-item .item-body {
+      max-height: 240px;
+      overflow: hidden;
+    }
+    /* メッセージ表示欄 */
+    #show-message {
+      margin: 0 1% 1rem 1%;
+      padding: 0.5rem;
+      color: white;
+      background-color: mediumturquoise;
+    }
+    /* 完了したカードのテキストを灰色にして取り消し線を入れる */
+    .kanban-item.done {
+      color: gray;
+      text-decoration: line-through;
+      background-color: whitesmoke;
+    }
+    /* 完了したカードの画像を75%モノクロにして薄く表示する */
+    .kanban-item.done img {
+      filter: grayscale(75%);
+      opacity: 0.5;
+    }
+    /* カラムのタイトルの色 */
+    .kanban-board header {
+      color: white;
+      background-color: gray;
+    }
+    .kanban-board header.red {
+      background-color: crimson;
+    }
+    .kanban-board header.blue {
+      background-color: royalblue;
+    }
+    .kanban-board header.green {
+      background-color: green;
+    }
+    /* hidden クラスを持つ header や main を非表示にする */
+    header.hidden, main.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ここにカンバンを表示する -->
+  <div id="kanban-canvas"></div>
+
+  <!-- ここにボタンを表示する -->
+  <div id="buttons">
+    <button id="hide-column-main">カラムのボディを隠す</button>
+    <button id="hide-swimlane-main">スイムレーンのボディを隠す</button>
+    <button id="hide-column-header">カラムのヘッダーを隠す</button>
+    <button id="apply-grid-layout">グリッドレイアウトを適用する</button>
+  </div>
+
+  <script>
+
+    // カンバンに表示されるカラムやカードを定義
+    const dataContent = [
+      {
+        "id": "col-title-1",
+        "title": "準備中",
+        "class": "column-title,red,waiting",
+        "item": []
+      },
+      {
+        "id": "col-title-2",
+        "title": "実行中",
+        "class": "column-title,blue,in-progress",
+        "item": []
+      },
+      {
+        "id": "col-title-3",
+        "title": "完了",
+        "class": "column-title,green,completed",
+        "item": []
+      },
+      {
+        "id": "swim-1",
+        "title": "急いで",
+        "class": "swimlane,violet",
+        "item": []
+      },
+      {
+        "id": "swim-2",
+        "title": "ゆっくり",
+        "class": "swimlane,lime",
+        "item": []
+      },
+      {
+        "id": "swim-1-col-1",
+        "title": "準備中",
+        "class": "column-body,red,waiting",
+        "item": [
+          {
+            "id": "item-id-1",
+            "title": "AAA",
+            "class": "todo"
+          },
+          {
+            "id": "item-id-2",
+            "title": "BBB",
+            "class": "todo",
+          }
+        ]
+      },
+      {
+        "id": "swim-1-col-2",
+        "title": "実行中",
+        "class": "column-body,blue,in-progress",
+        "item": [
+          {
+            "id": "item-id-3",
+            "title": "CCC",
+            "class": "todo"
+          }
+        ]
+      },
+      {
+        "id": "swim-1-col-3",
+        "title": "完了",
+        "class": "column-body,green,completed",
+        "item": [
+          {
+            "id": "item-id-4",
+            "title": "DDD",
+            "class": "done"
+          },
+          {
+            "id": "item-id-5",
+            "title": "EEE",
+            "class": "done"
+          }
+        ]
+      },
+      {
+        "id": "swim-2-col-1",
+        "title": "準備中",
+        "class": "column-body,red,waiting",
+        "item": [
+          {
+            "id": "item-id-6",
+            "title": "FFF",
+            "class": "todo"
+          }
+        ]
+      },
+      {
+        "id": "swim-2-col-2",
+        "title": "実行中",
+        "class": "column-body,blue,in-progress",
+        "item": [
+          {
+            "id": "item-id-7",
+            "title": "GGG",
+            "class": "todo"
+          }
+        ]
+      },
+      {
+        "id": "swim-2-col-3",
+        "title": "完了",
+        "class": "column-body,green,completed",
+        "item": [
+          {
+            "id": "item-id-8",
+            "title": "HHH",
+            "class": "done"
+          }
+        ]
+      }
+    ];
+
+    // ここで jKanban を実行する
+    const kanban = new jKanban({
+      element: '#kanban-canvas',  // カンバンを表示する場所のID
+      boards: dataContent,        // カンバンに表示されるカラムやカードのデータ
+      gutter: '16px',             // カンバンの余白
+      widthBoard: '250px',        // カラムの幅 (responsivePercentageの「true」設定により無視される)
+      responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
+      dragItems: true,            // trueを選択時はカードをドラッグ可能
+      dragBoards: true,           // カラムをドラッグ可能にするかどうか
+
+      // コールバック
+      click: function (el) {
+      },
+      context: function (el, event) {
+        // カードが右クリックされた時に実行
+      },
+      dragEl: function (el, source) {
+        // カードのドラッグが始まった時に実行
+      },
+      dragendEl: function (el) {
+        // カードがドラッグが終わった時に実行
+      },
+      dropEl: function (el, target, source, sibling) {
+        // カードがドロップされたときに実行
+        onKanbanItemDropped(el, target, source, sibling);
+      },
+      dragBoard: function (el, source) {
+        // カラムのドラッグを開始した時に実行
+      },
+      dragendBoard: function (el) {
+        // カラムのドラッグが終わった時に実行
+      },
+      buttonClick: function(el, boardId) {
+        // ボタンがクリックされた時に実行
+      }
+    });
+
+    function onKanbanItemDropped(el, target, source, sibling) {
+      // 移動元カラムのタイトル
+      const sourceTitle = source.parentNode.querySelector('header').innerText;
+      // 移動元カラムのID
+      const sourceId = source.parentNode.dataset.id;
+      // 移動先カラムのタイトル
+      const targetTitle = target.parentNode.querySelector('header').innerText;
+      // 移動先カラムのID
+      const targetId = target.parentNode.dataset.id;
+
+      // 同じカラム内の移動か、それとも異なるカラム間の移動かを判別
+      const sameColumn = (sourceId === targetId) ? true : false;
+
+      // 異なるカラム間の移動なおかつ移動先カラムが「完了」の場合
+      // カードのステータスを「done」にする。
+      // 異なるカラム間の移動なおかつ移動先カラムが「完了」以外の場合
+      // カードのステータスを「todo」にする。
+      if (!sameColumn && targetTitle === '完了') {
+        setKanbanItemStatus(el, 'done');
+      } else if (!sameColumn && targetTitle !== '完了') {
+        setKanbanItemStatus(el, 'todo');
+      }
+
+    }
+
+    function setKanbanItemStatus(el, status) {
+      // ステータスが「done」の場合は
+      // カードの「todo」クラスを「done」に変更する。
+      if (status === 'done') {
+        el.classList.remove('todo');
+        el.classList.add('done');
+      // ステータスが「done」以外の場合は
+      // カードの「done」クラスを「todo」に変更する。
+      } else {
+        el.classList.remove('done');
+        el.classList.add('todo');
+      }
+    }
+
+    document.querySelectorAll('.kanban-board header').forEach(header => {
+      if (header.classList.contains('column-title')) {
+        header.parentNode.classList.add('column-title');
+      }
+      if (header.classList.contains('swimlane')) {
+        header.parentNode.classList.add('swimlane');
+      }
+      if (header.classList.contains('column-body')) {
+        header.parentNode.classList.add('column-body');
+      }
+    });
+
+    // カードに data-class= 属性が設定されていたら、
+    // その値を取得してクラス名に追加する。
+    // 今回はカンマ区切りで複数が設定されているので、
+    // まずは配列に変換してから処理する。
+    document.querySelectorAll('.kanban-item').forEach(item => {
+      if (item.dataset.class) {
+        const arrayClass = item.dataset.class.split(',');
+        arrayClass.forEach(className => {
+          item.classList.add(className);
+        });
+      }
+    });
+
+    document.getElementById('hide-column-main').addEventListener('click',(event) => {
+      document.querySelectorAll('.kanban-board.column-title main').forEach(mainElm => {
+        mainElm.classList.add('hidden');
+      });
+    });
+
+    document.getElementById('hide-swimlane-main').addEventListener('click',(event) => {
+      document.querySelectorAll('.kanban-board.swimlane main').forEach(mainElm => {
+        mainElm.classList.add('hidden');
+      });
+    });
+
+    document.getElementById('hide-column-header').addEventListener('click',(event) => {
+      document.querySelectorAll('.kanban-board.column-body header').forEach(headerElm => {
+        headerElm.classList.add('hidden');
+      });
+    });
+
+    document.getElementById('apply-grid-layout').addEventListener('click',(event) => {
+    });
+
+  </script>
+
+</body>
+</html>
+
