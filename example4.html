@@ -10,43 +10,19 @@
   <!-- jKanban の .js ファイルを読み込む -->
   <script src="https://cdn.jsdelivr.net/npm/jkanban@1.3.1/dist/jkanban.min.js"></script>
   <style>
-    /* カードの設定 */
-    .kanban-item .text-red {
-      color: crimson;
+    /* ボタン表示欄 */
+    #buttons {
+      margin-bottom: 16px;
     }
-    .kanban-item .text-bold {
-      font-weight: bold;
-    }
-    .kanban-item.orange {
-      color: white;
-      background-color: darkorange;
-    }
-    .kanban-item .item-body img {
-      width: 100%;
-    }
-    .kanban-item .item-body {
-      max-height: 240px;
-      overflow: hidden;
-    }
-    /* メッセージ表示欄 */
-    #show-message {
-      margin: 0 1% 1rem 1%;
-      padding: 0.5rem;
-      color: white;
-      background-color: mediumturquoise;
-    }
+
     /* 完了したカードのテキストを灰色にして取り消し線を入れる */
     .kanban-item.done {
       color: gray;
       text-decoration: line-through;
       background-color: whitesmoke;
     }
-    /* 完了したカードの画像を75%モノクロにして薄く表示する */
-    .kanban-item.done img {
-      filter: grayscale(75%);
-      opacity: 0.5;
-    }
-    /* カラムのタイトルの色 */
+
+    /* 見出しの色 */
     .kanban-board header {
       color: white;
       background-color: gray;
@@ -60,18 +36,15 @@
     .kanban-board header.green {
       background-color: green;
     }
-    /* header や main 要素に「hidden」クラスが付いたら非表示にする */
-    header.hidden, main.hidden {
-      display: none;
-    }
-    /* Gridの設定 */
+
+    /* グリッド・レイアウトの設定 */
     .kanban-container {
       grid-template-areas: "col-1-title    col-2-title   col-3-title"
                            "swim-1         swim-1        swim-1"
                            "swim-1-col-1   swim-1-col-2  swim-1-col-3"
                            "swim-2         swim-2        swim-2"
                            "swim-2-col-1   swim-2-col-2  swim-2-col-3";
-      grid-template-columns: minmax(240px,1fr) minmax(240px,1fr) minmax(240px,1fr);
+      grid-template-columns: 1fr 1fr 1fr;
       grid-template-rows: 54px 54px auto 54px auto;
       gap: 8px;
     }
@@ -86,18 +59,13 @@
     #swim-2-col-1 { grid-area: swim-2-col-1 }
     #swim-2-col-2 { grid-area: swim-2-col-2 }
     #swim-2-col-3 { grid-area: swim-2-col-3 }
-    .kanban-board {
-      display: flex;
-      flex-direction: column;
-    }
-
   </style>
 </head>
 <body>
 
   <!-- ここにボタンを表示する -->
   <div id="buttons">
-    <button id="hide-column-main">カラムのボディを隠す</button>
+    <button id="hide-title-main">見出しのボディを隠す</button>
     <button id="hide-swimlane-main">スイムレーンのボディを隠す</button>
     <button id="hide-column-header">カラムのヘッダーを隠す</button>
     <button id="apply-grid-layout">グリッドレイアウトを適用する</button>
@@ -130,13 +98,13 @@
       },
       {
         "id": "swim-1",
-        "title": "急いで",
+        "title": "東京",
         "class": "swimlane,violet",
         "item": []
       },
       {
         "id": "swim-2",
-        "title": "ゆっくり",
+        "title": "大阪",
         "class": "swimlane,lime",
         "item": []
       },
@@ -228,11 +196,9 @@
     const kanban = new jKanban({
       element: '#kanban-canvas',  // カンバンを表示する場所のID
       boards: dataContent,        // カンバンに表示されるカラムやカードのデータ
-      //gutter: '16px',             // カンバンの余白
-      //widthBoard: '250px',        // カラムの幅 (responsivePercentageの「true」設定により無視される)
-      //responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
+      responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
       dragItems: true,            // trueを選択時はカードをドラッグ可能
-      //dragBoards: true,           // カラムをドラッグ可能にするかどうか
+      dragBoards: false,          // カラムをドラッグ可能にするかどうか
 
       // コールバック
       click: function (el) {
@@ -283,7 +249,6 @@
       } else if (!sameColumn && targetTitle !== '完了') {
         setKanbanItemStatus(el, 'todo');
       }
-
     }
 
     function setKanbanItemStatus(el, status) {
@@ -298,6 +263,33 @@
         el.classList.remove('done');
         el.classList.add('todo');
       }
+    }
+
+    function applyGridLayout() {
+      document.querySelector('.kanban-container').style.display = 'grid';
+      document.querySelector('.kanban-container').style.width = 'auto';
+      document.querySelectorAll('.kanban-board').forEach(boardElm => {
+        boardElm.style.width = 'auto';
+        boardElm.style.margin = '0 0 0 0';
+      });
+    }
+
+    function hideTitleMain() {
+      document.querySelectorAll('.kanban-board.col-title main').forEach(mainElm => {
+        mainElm.style.display = 'none';
+      });
+    }
+
+    function hideColumnHeader() {
+      document.querySelectorAll('.kanban-board.col-body header').forEach(headerElm => {
+        headerElm.style.display = 'none';
+      });
+    }
+
+    function hideSwimlaneMain() {
+      document.querySelectorAll('.kanban-board.swimlane main').forEach(mainElm => {
+        mainElm.style.display = 'none';
+      });
     }
 
     document.querySelectorAll('.kanban-board header').forEach(header => {
@@ -333,31 +325,20 @@
       }
     });
 
-    document.getElementById('hide-column-main').addEventListener('click',(event) => {
-      document.querySelectorAll('.kanban-board.col-title main').forEach(mainElm => {
-        mainElm.classList.add('hidden');
-      });
+    document.getElementById('hide-title-main').addEventListener('click',(event) => {
+      hideTitleMain();
     });
 
     document.getElementById('hide-swimlane-main').addEventListener('click',(event) => {
-      document.querySelectorAll('.kanban-board.swimlane main').forEach(mainElm => {
-        mainElm.classList.add('hidden');
-      });
+      hideSwimlaneMain();
     });
 
     document.getElementById('hide-column-header').addEventListener('click',(event) => {
-      document.querySelectorAll('.kanban-board.col-body header').forEach(headerElm => {
-        headerElm.classList.add('hidden');
-      });
+      hideColumnHeader();
     });
 
     document.getElementById('apply-grid-layout').addEventListener('click',(event) => {
-      document.querySelector('.kanban-container').style.display = 'grid';
-      document.querySelector('.kanban-container').style.width = 'auto';
-      document.querySelectorAll('.kanban-board').forEach(boardElm => {
-        boardElm.style.width = 'auto';
-        boardElm.style.margin = '0 0 0 0';
-      });
+      applyGridLayout();
     });
 
   </script>
