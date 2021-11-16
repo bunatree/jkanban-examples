@@ -60,16 +60,40 @@
     .kanban-board header.green {
       background-color: green;
     }
-    /* hidden クラスを持つ header や main を非表示にする */
+    /* header や main 要素に「hidden」クラスが付いたら非表示にする */
     header.hidden, main.hidden {
       display: none;
     }
+    /* Gridの設定 */
+    .kanban-container {
+      grid-template-areas: "col-1-title    col-2-title   col-3-title"
+                           "swim-1         swim-1        swim-1"
+                           "swim-1-col-1   swim-1-col-2  swim-1-col-3"
+                           "swim-2         swim-2        swim-2"
+                           "swim-2-col-1   swim-2-col-2  swim-2-col-3";
+      grid-template-columns: minmax(240px,1fr) minmax(240px,1fr) minmax(240px,1fr);
+      grid-template-rows: 54px 54px auto 54px auto;
+      gap: 8px;
+    }
+    #col-1-title { grid-area: col-1-title }
+    #col-2-title { grid-area: col-2-title }
+    #col-3-title { grid-area: col-3-title }
+    #swim-1 { grid-area: swim-1 }
+    #swim-1-col-1 { grid-area: swim-1-col-1 }
+    #swim-1-col-2 { grid-area: swim-1-col-2 }
+    #swim-1-col-3 { grid-area: swim-1-col-3 }
+    #swim-2 { grid-area: swim-2 }
+    #swim-2-col-1 { grid-area: swim-2-col-1 }
+    #swim-2-col-2 { grid-area: swim-2-col-2 }
+    #swim-2-col-3 { grid-area: swim-2-col-3 }
+    .kanban-board {
+      display: flex;
+      flex-direction: column;
+    }
+
   </style>
 </head>
 <body>
-
-  <!-- ここにカンバンを表示する -->
-  <div id="kanban-canvas"></div>
 
   <!-- ここにボタンを表示する -->
   <div id="buttons">
@@ -79,26 +103,29 @@
     <button id="apply-grid-layout">グリッドレイアウトを適用する</button>
   </div>
 
+  <!-- ここにカンバンを表示する -->
+  <div id="kanban-canvas"></div>
+
   <script>
 
     // カンバンに表示されるカラムやカードを定義
     const dataContent = [
       {
-        "id": "col-title-1",
+        "id": "col-1-title",
         "title": "準備中",
-        "class": "column-title,red,waiting",
+        "class": "col-title,red,waiting",
         "item": []
       },
       {
-        "id": "col-title-2",
+        "id": "col-2-title",
         "title": "実行中",
-        "class": "column-title,blue,in-progress",
+        "class": "col-title,blue,in-progress",
         "item": []
       },
       {
-        "id": "col-title-3",
+        "id": "col-3-title",
         "title": "完了",
-        "class": "column-title,green,completed",
+        "class": "col-title,green,completed",
         "item": []
       },
       {
@@ -116,7 +143,7 @@
       {
         "id": "swim-1-col-1",
         "title": "準備中",
-        "class": "column-body,red,waiting",
+        "class": "col-body,red,waiting",
         "item": [
           {
             "id": "item-id-1",
@@ -133,7 +160,7 @@
       {
         "id": "swim-1-col-2",
         "title": "実行中",
-        "class": "column-body,blue,in-progress",
+        "class": "col-body,blue,in-progress",
         "item": [
           {
             "id": "item-id-3",
@@ -145,7 +172,7 @@
       {
         "id": "swim-1-col-3",
         "title": "完了",
-        "class": "column-body,green,completed",
+        "class": "col-body,green,completed",
         "item": [
           {
             "id": "item-id-4",
@@ -162,7 +189,7 @@
       {
         "id": "swim-2-col-1",
         "title": "準備中",
-        "class": "column-body,red,waiting",
+        "class": "col-body,red,waiting",
         "item": [
           {
             "id": "item-id-6",
@@ -174,7 +201,7 @@
       {
         "id": "swim-2-col-2",
         "title": "実行中",
-        "class": "column-body,blue,in-progress",
+        "class": "col-body,blue,in-progress",
         "item": [
           {
             "id": "item-id-7",
@@ -186,7 +213,7 @@
       {
         "id": "swim-2-col-3",
         "title": "完了",
-        "class": "column-body,green,completed",
+        "class": "col-body,green,completed",
         "item": [
           {
             "id": "item-id-8",
@@ -201,11 +228,11 @@
     const kanban = new jKanban({
       element: '#kanban-canvas',  // カンバンを表示する場所のID
       boards: dataContent,        // カンバンに表示されるカラムやカードのデータ
-      gutter: '16px',             // カンバンの余白
-      widthBoard: '250px',        // カラムの幅 (responsivePercentageの「true」設定により無視される)
-      responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
+      //gutter: '16px',             // カンバンの余白
+      //widthBoard: '250px',        // カラムの幅 (responsivePercentageの「true」設定により無視される)
+      //responsivePercentage: true, // trueを選択時はカラム幅は％で指定され、gutterとwidthBoardの設定は不要
       dragItems: true,            // trueを選択時はカードをドラッグ可能
-      dragBoards: true,           // カラムをドラッグ可能にするかどうか
+      //dragBoards: true,           // カラムをドラッグ可能にするかどうか
 
       // コールバック
       click: function (el) {
@@ -274,14 +301,22 @@
     }
 
     document.querySelectorAll('.kanban-board header').forEach(header => {
-      if (header.classList.contains('column-title')) {
-        header.parentNode.classList.add('column-title');
+      if (header.classList.contains('col-title')) {
+        header.parentNode.classList.add('col-title');
       }
       if (header.classList.contains('swimlane')) {
         header.parentNode.classList.add('swimlane');
       }
-      if (header.classList.contains('column-body')) {
-        header.parentNode.classList.add('column-body');
+      if (header.classList.contains('col-body')) {
+        header.parentNode.classList.add('col-body');
+      }
+    });
+
+    // カラムのIDは data-id= 属性として設定されている。
+    // これを id= 属性に反映させる。
+    document.querySelectorAll('.kanban-board').forEach(boardElm => {
+      if (boardElm.dataset.id) {
+        boardElm.id = boardElm.dataset.id;
       }
     });
 
@@ -289,17 +324,17 @@
     // その値を取得してクラス名に追加する。
     // 今回はカンマ区切りで複数が設定されているので、
     // まずは配列に変換してから処理する。
-    document.querySelectorAll('.kanban-item').forEach(item => {
-      if (item.dataset.class) {
-        const arrayClass = item.dataset.class.split(',');
+    document.querySelectorAll('.kanban-item').forEach(itemElm => {
+      if (itemElm.dataset.class) {
+        const arrayClass = itemElm.dataset.class.split(',');
         arrayClass.forEach(className => {
-          item.classList.add(className);
+          itemElm.classList.add(className);
         });
       }
     });
 
     document.getElementById('hide-column-main').addEventListener('click',(event) => {
-      document.querySelectorAll('.kanban-board.column-title main').forEach(mainElm => {
+      document.querySelectorAll('.kanban-board.col-title main').forEach(mainElm => {
         mainElm.classList.add('hidden');
       });
     });
@@ -311,12 +346,18 @@
     });
 
     document.getElementById('hide-column-header').addEventListener('click',(event) => {
-      document.querySelectorAll('.kanban-board.column-body header').forEach(headerElm => {
+      document.querySelectorAll('.kanban-board.col-body header').forEach(headerElm => {
         headerElm.classList.add('hidden');
       });
     });
 
     document.getElementById('apply-grid-layout').addEventListener('click',(event) => {
+      document.querySelector('.kanban-container').style.display = 'grid';
+      document.querySelector('.kanban-container').style.width = 'auto';
+      document.querySelectorAll('.kanban-board').forEach(boardElm => {
+        boardElm.style.width = 'auto';
+        boardElm.style.margin = '0 0 0 0';
+      });
     });
 
   </script>
